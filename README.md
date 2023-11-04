@@ -1,6 +1,8 @@
 # wifiScanner
 Python wifi scanner
 
-install tabulate
+Only for maxOS right now
 
-uses sudo so must include password in order to obtain BSSID's
+Install tabulate
+
+Uses sudo so must include password in order to obtain BSSID's
