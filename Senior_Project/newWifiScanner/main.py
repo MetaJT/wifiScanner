@@ -6,6 +6,12 @@ import subprocess
 import sys
 from tabulate import tabulate
 
+class Bcolors:
+    GREAT = "\033[0;32m" # green
+    GOOD  = "\033[1;33m" # yellow
+    FAIR = "\033[35m"    # magenta
+    POOR = "\033[1;31m"  # red
+
 def ensure_str(output):
     try:
         output = output.decode("utf8",errors='ignore')
@@ -148,29 +154,38 @@ def sample(device=""):
 
 def print_wifi_networks(networks):
     headers = ["SSID", "BSSID", "Quality", "Security"]
-    table_data = []
+    networks = sorted(networks, key=lambda x:x['quality'], reverse=True)
 
-    for network in networks:
-        ssid = network.get("ssid", "")
-        bssid = network.get("bssid", "")
-        quality = network.get("quality", "")
-        security = network.get("security", "")
-        data = [ssid, bssid, quality, security]
+    column_widths = [max(len(header), max(len(str(ap.get(header.lower()))) for ap in networks)) for header in headers]
 
-        table_data.append(data)
+    # Create the format string for formatting each row
+    format_str = " | ".join(f"{{:<{width}}}" for width in column_widths)
 
-    sorted_data = sorted(table_data, key=lambda x:x[2], reverse=True)
+    # Print the table headers
+    print(format_str.format(*headers))
+    print("-" * (sum(column_widths) + len(column_widths) * 3 - 2))
 
-    table = tabulate(sorted_data, headers, tablefmt="mixed_grid")
-    #table = colorize_table(table)
-    print(table)
+    # Print the data rows
+    for ap in networks:
+        if ap.get('quality') >= 70:
+            color = Bcolors.GREAT
+        elif ap.get('quality') >= 50:
+            color = Bcolors.GOOD
+        elif ap.get('quality') >= 30:
+            color = Bcolors.FAIR
+        else:
+            color = Bcolors.POOR
+
+        print(color + format_str.format(ap.get('ssid'), ap.get('bssid'), ap.get('quality'), ap.get('security')))
 
 def main():
 
     device = [x for x in sys.argv[1:] if "-" not in x] or [""]
+    print(device)
     device = device[0]
     wifi_scanner = get_scanner(device)
     access_points = wifi_scanner.get_access_points()
+    print(type(access_points[0]))
     if '-n' in sys.argv:
         print(len(access_points))
     else:
