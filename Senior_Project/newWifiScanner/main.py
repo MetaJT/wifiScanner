@@ -4,7 +4,6 @@ import os
 import platform
 import subprocess
 import sys
-from tabulate import tabulate
 
 class Bcolors:
     GREAT = "\033[0;32m" # green
@@ -181,15 +180,12 @@ def print_wifi_networks(networks):
 def main():
 
     device = [x for x in sys.argv[1:] if "-" not in x] or [""]
-    print(device)
     device = device[0]
     wifi_scanner = get_scanner(device)
     access_points = wifi_scanner.get_access_points()
-    print(type(access_points[0]))
     if '-n' in sys.argv:
         print(len(access_points))
     else:
-        # res = json.dumps(access_points)
         print_wifi_networks(access_points)
 
 
